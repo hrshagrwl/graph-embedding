@@ -98,7 +98,9 @@ def load_movie_data():
     return movies, directors, actors, genres
 
     
-    
+def addNeighbor(a, b):
+  a.neighbors.append(b)
+  b.neighbors.append(a)
 
 
 def records_to_graph():
@@ -136,12 +138,67 @@ def records_to_graph():
     # Create nodes for the different entities in the graph
     nodelist = []
     nodedict = {}
-    # YOUR CODE HERE
+    id = 0
 
+    # Add Actor Nodes
+    for actor in actors:
+      N = Node(id, actor, 'actor')
+      nodelist.append(N)
+      nodedict[actor] = N
+      id += 1
+      
+    # Add Director Nodes
+    for director in directors:
+      N = Node(id, director, 'director')
+      nodelist.append(N)
+      nodedict[director] = N
+      id += 1
+
+    # Add Genre Nodes  
+    for genre in genres:
+      N = Node(id,genre,'genre')
+      nodelist.append(N)
+      nodedict[genre] = N
+      id += 1
+    
     # Add edges between users and movie-rating nodes
-    # YOUR CODE HERE
+    for movie in movies:
+      N = Node(id, movie, 'movie')
+      nodelist.append(N)
+      nodedict[movie] = N
+      id += 1
 
+      for i in range(0,6):
+        rN = Node(id, movie + '_' + str(i),'rating')
+        nodelist.append(rN)
+        nodedict[movie + '_' + str(i)] = rN
+        id += 1
+        addNeighbor(N, rN)
 
+      
+      # movie - director
+      movie = movies[movie]
+      if (movie.director != None):
+        addNeighbor(N, nodedict[movie.director])
+        
+      # movie - actor
+      for actor in movie.actors:
+        addNeighbor(N, nodedict[actor])
+        
+      # movie - genre
+      for genre in movie.genres:
+        addNeighbor(N, nodedict[genre])
+      
+    # user - rating
+    for user in ratings:
+      N = Node(id, user, 'user')
+      nodedict[user] = N
+      nodelist.append(N)
+      id += 1
+      for m in ratings[user]:
+        rating = ratings[user][m]
+        addNeighbor(N, nodedict[m + "_" + rating])
+        
     # Write out the graph
     for node in nodelist:
         node_list_file.write("%s\t%s\t%s\n" % (node.id, node.name, node.type))
@@ -153,8 +210,6 @@ def records_to_graph():
     node_list_file.close()
     
     return nodedict
-
-
 
 
 
